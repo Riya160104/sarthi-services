@@ -14,8 +14,12 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.get("/", (req,res)=>{
-    res.send("Sarthi Services Backend Running")
+// Serve the client-side site from the `client/` folder so the frontend and API share the same origin.
+const CLIENT_DIR = path.join(__dirname, "..", "client")
+app.use(express.static(CLIENT_DIR))
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(CLIENT_DIR, "index.html"))
 })
 
 app.post("/contact", async (req,res)=>{
@@ -30,6 +34,7 @@ app.post("/contact", async (req,res)=>{
   }
 
   try {
+    debugger;
     console.log("Received contact form submission:", {name,email,message});
 
     const transporter = nodemailer.createTransport({
@@ -52,12 +57,15 @@ Message: ${message}`,
 
     res.json({ message: "Email sent successfully" })
   } catch (err) {
+    debugger;
     console.error("Failed to send contact email:", err)
     res.status(500).json({ message: "Email failed", details: err.message })
   }
 
 })
 
-app.listen(5500,()=>{
-console.log("Server running on port 5500")
+const PORT = process.env.PORT || 5000
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
 })
