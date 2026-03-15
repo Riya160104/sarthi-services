@@ -11,7 +11,18 @@ console.log("Server file started")
 
 const app = express()
 
-app.use(cors())
+// 1. Define your Netlify URL
+const netlifyURL = 'https://sarthi-services.netlify.app/';
+
+// 2. Configure CORS options
+const corsOptions = {
+  origin: netlifyURL,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 204 // Some legacy browsers choke on 204
+};
+
+
+app.use(cors(corsOptions));
 app.use(express.json())
 
 // Serve the client-side site from the `client/` folder so the frontend and API share the same origin.
