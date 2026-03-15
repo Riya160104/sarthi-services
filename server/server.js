@@ -1,7 +1,11 @@
+const path = require("path")
 const express = require("express")
 const nodemailer = require("nodemailer")
 const cors = require("cors")
-require("dotenv").config()
+
+// Load configuration from the project root .env file even when this script is
+// started from a different current working directory.
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") })
 
 console.log("Server file started")
 
@@ -16,37 +20,44 @@ app.get("/", (req,res)=>{
 
 app.post("/contact", async (req,res)=>{
 
-const {name,email,message} = req.body
+  const {name,email,message} = req.body
 
-try{
+  // Ensure required credentials are set
+  const { EMAIL_USER, EMAIL_PASS } = process.env
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    console.error("Missing EMAIL_USER or EMAIL_PASS environment variables")
+    return res.status(500).json({ message: "Server email credentials are not configured" })
+  }
 
-const transporter = nodemailer.createTransport({
-service:"gmail",
-auth:{
-user:process.env.EMAIL_USER,
-pass:process.env.EMAIL_PASS
-}
-})
+  try {
+    console.log("Received contact form submission:", {name,email,message});
 
-await transporter.sendMail({
-from:process.env.EMAIL_USER,
-to:"bishnu@sarthiservices.in",
-replyTo:email,
-subject:"New Contact from Sarthi Services Website",
-text:`Name: ${name}
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
+      },
+    })
+
+    await transporter.sendMail({
+      from: EMAIL_USER,
+      to: "bishnu@sarthiservices.in",
+      replyTo: email,
+      subject: "New Contact from Sarthi Services Website",
+      text: `Name: ${name}
 Email: ${email}
-Message: ${message}`
+Message: ${message}`,
+    })
+
+    res.json({ message: "Email sent successfully" })
+  } catch (err) {
+    console.error("Failed to send contact email:", err)
+    res.status(500).json({ message: "Email failed", details: err.message })
+  }
+
 })
 
-res.json({message:"Email sent successfully"})
-
-}catch(err){
-console.log(err)
-res.status(500).json({message:"Email failed"})
-}
-
-})
-
-app.listen(5000,()=>{
-console.log("Server running on port 5000")
+app.listen(5500,()=>{
+console.log("Server running on port 5500")
 })
