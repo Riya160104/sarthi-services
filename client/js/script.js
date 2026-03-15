@@ -6,7 +6,7 @@ const name=document.getElementById("name").value
 const email=document.getElementById("email").value
 const message=document.getElementById("message").value
 
-const res = await fetch("http://localhost:5000/contact",{
+const res = await fetch("https://sarthi-services-backend.onrender.com/contact", {
 
 method:"POST",
 headers:{
